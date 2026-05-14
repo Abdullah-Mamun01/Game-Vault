@@ -1,0 +1,2100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Game Vault — Abdullah Al Mamun</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0a0c10;
+  --surface: #13161d;
+  --surface2: #1a1e28;
+  --surface3: #222736;
+  --border: rgba(255,255,255,0.07);
+  --text: #e8ecf4;
+  --text-muted: #7a8499;
+  --playing-main: #2980b9;
+  --playing-glow: #3498db;
+  --completed-main: #8e44ad;
+  --completed-glow: #9b59b6;
+  --backlog-main: #c0392b;
+  --backlog-glow: #ff4c3b;
+  --wishlist-main: #27ae60;
+  --wishlist-glow: #2ecc71;
+  --star-gold: #f0c040;
+  --star-glow: #ffd700;
+  --font-head: 'Rajdhani', sans-serif;
+  --font-body: 'Exo 2', sans-serif;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --transition: 0.22s cubic-bezier(.4,0,.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 100% 0%, rgba(200,30,60,0.13) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 0% 100%, rgba(30,160,80,0.10) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 99px; }
+
+/* ── HEADER ── */
+header {
+  position: relative;
+  z-index: 10;
+  padding: 22px 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10,12,16,0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.header-icon {
+  width: 52px; height: 52px;
+  background: linear-gradient(135deg, #1a5fa8, #2980b9);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 4px 20px rgba(41,128,185,0.4);
+  flex-shrink: 0;
+}
+
+.header-titles h1 {
+  font-family: var(--font-head);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  background: linear-gradient(90deg, #fff 40%, var(--star-gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.header-titles p {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  margin-top: 4px;
+  font-family: var(--font-head);
+  text-transform: uppercase;
+}
+
+.stat-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stat-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-family: var(--font-head);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: var(--transition);
+}
+
+.stat-pill.playing  { border-color: rgba(52,152,219,0.4); color: var(--playing-glow); }
+.stat-pill.completed{ border-color: rgba(155,89,182,0.4); color: var(--completed-glow); }
+.stat-pill.backlog  { border-color: rgba(255,76,59,0.4);  color: var(--backlog-glow); }
+.stat-pill.wishlist { border-color: rgba(46,204,113,0.4); color: var(--wishlist-glow); }
+
+/* ── MAIN LAYOUT ── */
+main {
+  position: relative;
+  z-index: 1;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 16px 100px;
+}
+
+/* ── RECENTLY ACTIVE SHELF ── */
+#shelf-section {
+  margin: 20px 0 4px;
+}
+
+.shelf-title {
+  font-family: var(--font-head);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.shelf-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+}
+.shelf-scroll::-webkit-scrollbar { display: none; }
+
+.shelf-card {
+  flex-shrink: 0;
+  width: 90px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  transition: var(--transition);
+  position: relative;
+}
+.shelf-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+
+.shelf-thumb {
+  width: 90px; height: 72px;
+  object-fit: cover;
+  display: block;
+  background: var(--surface3);
+}
+.shelf-thumb-placeholder {
+  width: 90px; height: 72px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  background: var(--surface3);
+}
+
+.shelf-info {
+  padding: 5px 6px 6px;
+  display: flex; align-items: center; gap: 5px;
+}
+
+.shelf-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.shelf-dot.playing   { background: var(--playing-glow); }
+.shelf-dot.completed { background: var(--completed-glow); }
+.shelf-dot.backlog   { background: var(--backlog-glow); }
+.shelf-dot.wishlist  { background: var(--wishlist-glow); }
+
+.shelf-name {
+  font-size: 0.65rem;
+  font-family: var(--font-body);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+/* ── TABS ── */
+.controls {
+  position: sticky;
+  top: 0;
+  z-index: 9;
+  background: rgba(10,12,16,0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 12px 0 10px;
+  margin: 0 -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tabs-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.tabs-row::-webkit-scrollbar { display: none; }
+
+.tab-btn {
+  flex-shrink: 0;
+  font-family: var(--font-head);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 7px 16px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+.tab-btn.active.all        { background: linear-gradient(135deg, #1a1e28, #222736); color: #fff; border-color: rgba(255,255,255,0.25); }
+.tab-btn.active.playing    { background: linear-gradient(135deg, #1a4a6a, #2980b9); color: #fff; border-color: var(--playing-main); box-shadow: 0 0 12px rgba(52,152,219,0.4); }
+.tab-btn.active.completed  { background: linear-gradient(135deg, #4a1e6a, #8e44ad); color: #fff; border-color: var(--completed-main); box-shadow: 0 0 12px rgba(155,89,182,0.4); }
+.tab-btn.active.backlog    { background: linear-gradient(135deg, #6a1a15, #c0392b); color: #fff; border-color: var(--backlog-main); box-shadow: 0 0 12px rgba(255,76,59,0.4); }
+.tab-btn.active.wishlist   { background: linear-gradient(135deg, #0e4a28, #27ae60); color: #fff; border-color: var(--wishlist-main); box-shadow: 0 0 12px rgba(46,204,113,0.4); }
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.platform-chip {
+  font-family: var(--font-head);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.platform-chip.active {
+  background: var(--surface3);
+  border-color: rgba(255,255,255,0.3);
+  color: var(--text);
+}
+
+.filter-spacer { flex: 1; }
+
+.sort-select {
+  font-family: var(--font-head);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 8px;
+  padding: 4px 10px;
+  cursor: pointer;
+  outline: none;
+  transition: var(--transition);
+}
+.sort-select:focus { border-color: rgba(255,255,255,0.25); color: var(--text); }
+
+.view-toggle {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: var(--font-head);
+  font-weight: 600;
+}
+.view-toggle:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+.search-bar {
+  margin-top: 8px;
+  position: relative;
+}
+
+.search-bar input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 14px 9px 36px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  outline: none;
+  transition: var(--transition);
+}
+.search-bar input:focus { border-color: rgba(255,255,255,0.2); background: var(--surface3); }
+.search-bar input::placeholder { color: var(--text-muted); }
+
+.search-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+/* ── WISHLIST BUDGET BAR ── */
+#budget-bar {
+  display: none;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin: 16px 0 10px;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+#budget-bar.visible { display: flex; }
+
+.budget-item {
+  display: flex; align-items: center; gap: 8px;
+}
+.budget-label {
+  font-family: var(--font-head);
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.budget-value {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--wishlist-glow);
+}
+
+/* ── GRID / LIST ── */
+.content-area {
+  margin-top: 16px;
+}
+
+#games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+#games-grid.list-view {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+/* ── GAME CARD (GRID) ── */
+.game-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: var(--transition);
+  position: relative;
+  animation: fadeUp 0.35s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.game-card:hover {
+  transform: translateY(-4px);
+}
+.game-card.playing:hover  { box-shadow: 0 8px 28px rgba(52,152,219,0.35); border-color: rgba(52,152,219,0.4); }
+.game-card.completed:hover{ box-shadow: 0 8px 28px rgba(155,89,182,0.35); border-color: rgba(155,89,182,0.4); }
+.game-card.backlog:hover  { box-shadow: 0 8px 28px rgba(255,76,59,0.3);  border-color: rgba(255,76,59,0.4); }
+.game-card.wishlist:hover { box-shadow: 0 8px 28px rgba(46,204,113,0.3); border-color: rgba(46,204,113,0.35); }
+
+.game-card.playing {
+  animation: fadeUp 0.35s ease both, playPulse 2.5s ease-in-out infinite 0.5s;
+}
+@keyframes playPulse {
+  0%,100% { border-color: rgba(52,152,219,0.25); }
+  50%      { border-color: rgba(52,152,219,0.7); box-shadow: 0 0 14px rgba(52,152,219,0.25); }
+}
+
+.cover-wrap {
+  position: relative;
+  width: 100%;
+  padding-top: 125%;
+  overflow: hidden;
+  background: var(--surface2);
+}
+
+.cover-img {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cover-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 2rem;
+  color: var(--text-muted);
+  background: var(--surface2);
+}
+.cover-placeholder span {
+  font-size: 0.62rem;
+  font-family: var(--font-head);
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.status-badge {
+  position: absolute;
+  top: 8px; right: 8px;
+  font-family: var(--font-head);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 99px;
+  backdrop-filter: blur(6px);
+}
+.status-badge.playing   { background: rgba(41,128,185,0.85);  color: #fff; }
+.status-badge.completed { background: rgba(142,68,173,0.85);  color: #fff; }
+.status-badge.backlog   { background: rgba(192,57,43,0.85);   color: #fff; }
+.status-badge.wishlist  { background: rgba(39,174,96,0.85);   color: #fff; }
+
+.star-badge {
+  position: absolute;
+  top: 8px; left: 8px;
+  font-size: 0.9rem;
+  line-height: 1;
+  text-shadow: 0 0 8px rgba(240,192,64,0.8);
+  filter: drop-shadow(0 0 4px rgba(240,192,64,0.6));
+}
+
+.completed-badge {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(0deg, rgba(142,68,173,0.95) 0%, transparent 100%);
+  padding: 18px 8px 6px;
+  font-size: 0.7rem;
+  color: #ddb;
+  text-align: center;
+  font-family: var(--font-head);
+  letter-spacing: 1px;
+}
+
+.card-info {
+  padding: 8px 10px 10px;
+}
+
+.card-platform {
+  font-family: var(--font-head);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+
+.card-title {
+  font-family: var(--font-head);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-rating {
+  font-size: 0.65rem;
+  color: var(--star-gold);
+  margin-top: 3px;
+  letter-spacing: 1px;
+}
+
+.card-price {
+  font-family: var(--font-head);
+  font-size: 0.65rem;
+  color: var(--wishlist-glow);
+  margin-top: 3px;
+}
+
+/* ── LIST VIEW ── */
+.list-card {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  animation: fadeUp 0.25s ease both;
+}
+.list-card:hover { background: var(--surface2); transform: translateX(3px); }
+.list-card.playing   { border-left: 3px solid var(--playing-glow); }
+.list-card.completed { border-left: 3px solid var(--completed-glow); }
+.list-card.backlog   { border-left: 3px solid var(--backlog-glow); }
+.list-card.wishlist  { border-left: 3px solid var(--wishlist-glow); }
+
+.list-thumb {
+  width: 40px; height: 50px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--surface3);
+}
+.list-thumb-placeholder {
+  width: 40px; height: 50px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: var(--surface3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+
+.list-info { flex: 1; min-width: 0; }
+
+.list-title {
+  font-family: var(--font-head);
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.list-meta {
+  display: flex; gap: 8px; align-items: center; margin-top: 3px; flex-wrap: wrap;
+}
+
+.list-platform {
+  font-family: var(--font-head);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--surface3);
+  padding: 1px 7px;
+  border-radius: 99px;
+}
+
+.list-status {
+  font-family: var(--font-head);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.list-status.playing   { color: var(--playing-glow); }
+.list-status.completed { color: var(--completed-glow); }
+.list-status.backlog   { color: var(--backlog-glow); }
+.list-status.wishlist  { color: var(--wishlist-glow); }
+
+.list-rating { font-size: 0.6rem; color: var(--star-gold); }
+
+.list-notes {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-style: italic;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+.empty-state .empty-icon { font-size: 3.5rem; margin-bottom: 14px; }
+.empty-state p { font-family: var(--font-head); font-size: 1rem; letter-spacing: 0.5px; }
+
+/* ── FAB ── */
+#fab {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  z-index: 100;
+  width: 58px; height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c8a020, var(--star-gold));
+  border: none;
+  color: #000;
+  font-size: 1.8rem;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(240,192,64,0.5);
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+  font-family: var(--font-head);
+  line-height: 1;
+}
+#fab:hover { transform: scale(1.08) rotate(90deg); box-shadow: 0 6px 28px rgba(240,192,64,0.7); }
+
+/* ── MODAL OVERLAY ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── ADD MODAL (BOTTOM SHEET) ── */
+#add-modal-inner {
+  width: 100%;
+  max-width: 520px;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: 20px 22px 36px;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+  max-height: 92vh;
+  overflow-y: auto;
+  position: relative;
+}
+#add-modal-overlay.visible #add-modal-inner {
+  transform: translateY(0);
+}
+
+.modal-drag-bar {
+  width: 40px; height: 4px;
+  background: var(--surface3);
+  border-radius: 99px;
+  margin: 0 auto 18px;
+}
+
+.modal-title {
+  font-family: var(--font-head);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  color: var(--star-gold);
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+.form-label {
+  display: block;
+  font-family: var(--font-head);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.form-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 13px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  outline: none;
+  transition: var(--transition);
+}
+.form-input:focus { border-color: rgba(255,255,255,0.25); background: var(--surface3); }
+.form-input::placeholder { color: var(--text-muted); }
+
+.toggle-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toggle-btn {
+  font-family: var(--font-head);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.toggle-btn:hover { color: var(--text); }
+.toggle-btn.active.ps5 { background: #1a3a6a; border-color: var(--playing-glow); color: var(--playing-glow); }
+.toggle-btn.active.ps4 { background: #1a2a6a; border-color: #5588ff; color: #5588ff; }
+.toggle-btn.active.playing   { background: rgba(41,128,185,0.2); border-color: var(--playing-glow);   color: var(--playing-glow); }
+.toggle-btn.active.completed { background: rgba(142,68,173,0.2); border-color: var(--completed-glow); color: var(--completed-glow); }
+.toggle-btn.active.backlog   { background: rgba(192,57,43,0.2);  border-color: var(--backlog-glow);   color: var(--backlog-glow); }
+.toggle-btn.active.wishlist  { background: rgba(39,174,96,0.2);  border-color: var(--wishlist-glow);  color: var(--wishlist-glow); }
+
+.star-toggle-btn {
+  font-size: 0.85rem;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font-head);
+  font-weight: 700;
+  transition: var(--transition);
+}
+.star-toggle-btn.active {
+  background: rgba(240,192,64,0.15);
+  border-color: var(--star-gold);
+  color: var(--star-gold);
+}
+
+.stars-input {
+  display: flex; gap: 6px;
+}
+.star-icon {
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: var(--surface3);
+  transition: color 0.15s;
+  line-height: 1;
+  user-select: none;
+}
+.star-icon.filled { color: var(--star-gold); }
+.star-icon:hover { color: var(--star-gold); }
+
+.cover-dropzone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-family: var(--font-head);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  position: relative;
+}
+.cover-dropzone:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+.cover-dropzone input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer;
+}
+.cover-preview-wrap {
+  text-align: center;
+  margin-top: 8px;
+}
+.cover-preview-wrap img {
+  max-height: 90px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 13px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #b8900e, var(--star-gold));
+  color: #000;
+  font-family: var(--font-head);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: var(--transition);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(240,192,64,0.4); }
+
+/* ── DETAIL MODAL ── */
+#detail-overlay {
+  align-items: center;
+}
+
+#detail-modal-inner {
+  width: 100%;
+  max-width: 480px;
+  background: var(--surface);
+  border-radius: 18px;
+  overflow: hidden;
+  transform: scale(0.9);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1), opacity 0.3s ease;
+  max-height: 94vh;
+  overflow-y: auto;
+  position: relative;
+  margin: 20px;
+}
+#detail-overlay.visible #detail-modal-inner {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.detail-image-area {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  background: var(--surface2);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.detail-image-area img.detail-cover {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.detail-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 4rem;
+  background: var(--surface2);
+}
+
+.detail-star-btn {
+  position: absolute;
+  top: 12px; left: 12px;
+  z-index: 5;
+  width: 36px; height: 36px;
+  background: rgba(0,0,0,0.5);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(6px);
+  transition: var(--transition);
+}
+.detail-star-btn svg { width: 18px; height: 18px; }
+
+.detail-close-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  z-index: 5;
+  width: 32px; height: 32px;
+  background: rgba(0,0,0,0.5);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #fff;
+  font-size: 1.1rem;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(6px);
+  transition: var(--transition);
+}
+.detail-close-btn:hover { background: rgba(200,50,50,0.7); }
+
+.img-action-btns {
+  position: absolute;
+  bottom: 10px;
+  left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 10px;
+}
+
+.img-btn {
+  font-family: var(--font-head);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 5px 11px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: var(--transition);
+}
+.img-btn.remove { background: rgba(200,50,50,0.75); color: #fff; }
+.img-btn.add    { background: rgba(0,0,0,0.65); color: var(--text); border: 1px solid rgba(255,255,255,0.15); position: relative; overflow: hidden; }
+.img-btn.add input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.img-btn.save-cover { background: linear-gradient(135deg, #1a6b3a, #27ae60); color: #fff; display: none; }
+.img-btn.save-cover.visible { display: block; }
+
+.detail-body {
+  padding: 18px 20px 24px;
+}
+
+.detail-platform {
+  font-family: var(--font-head);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.detail-platform.playing   { color: var(--playing-glow); }
+.detail-platform.completed { color: var(--completed-glow); }
+.detail-platform.backlog   { color: var(--backlog-glow); }
+.detail-platform.wishlist  { color: var(--wishlist-glow); }
+
+.detail-title {
+  font-family: var(--font-head);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+
+.detail-section-label {
+  font-family: var(--font-head);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 7px;
+  margin-top: 14px;
+}
+
+.status-btns {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.status-change-btn {
+  font-family: var(--font-head);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.status-change-btn.active.playing   { background: rgba(41,128,185,0.2); border-color: var(--playing-glow);   color: var(--playing-glow); }
+.status-change-btn.active.completed { background: rgba(142,68,173,0.2); border-color: var(--completed-glow); color: var(--completed-glow); }
+.status-change-btn.active.backlog   { background: rgba(192,57,43,0.2);  border-color: var(--backlog-glow);   color: var(--backlog-glow); }
+.status-change-btn.active.wishlist  { background: rgba(39,174,96,0.2);  border-color: var(--wishlist-glow);  color: var(--wishlist-glow); }
+
+.rating-row {
+  display: flex; gap: 8px; align-items: center;
+}
+.detail-star {
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--surface3);
+  transition: color 0.15s;
+  line-height: 1;
+  user-select: none;
+}
+.detail-star.filled { color: var(--star-gold); text-shadow: 0 0 8px rgba(240,192,64,0.6); }
+.detail-star:hover  { color: var(--star-gold); }
+
+.notes-wrap { position: relative; }
+.detail-notes {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-style: italic;
+  outline: none;
+  resize: vertical;
+  min-height: 60px;
+  transition: var(--transition);
+}
+.detail-notes:focus { border-color: rgba(255,255,255,0.2); background: var(--surface3); }
+.detail-notes::placeholder { color: var(--text-muted); }
+
+.save-notes-btn {
+  font-family: var(--font-head);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  border-radius: 7px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: var(--surface3);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 6px;
+}
+.save-notes-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.3); }
+
+.detail-field-row {
+  display: flex; align-items: center; gap: 10px; margin-top: 8px;
+}
+.detail-field-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 10px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  outline: none;
+  transition: var(--transition);
+}
+.detail-field-input:focus { border-color: rgba(255,255,255,0.2); }
+
+.detail-actions {
+  display: flex; gap: 10px; margin-top: 18px;
+}
+.btn-delete {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(200,50,50,0.5);
+  background: transparent;
+  color: #e06060;
+  font-family: var(--font-head);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-delete:hover { background: rgba(200,50,50,0.15); }
+
+.btn-close-detail {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  font-family: var(--font-head);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-close-detail:hover { color: var(--text); }
+
+.delete-confirm-area {
+  display: none;
+  margin-top: 14px;
+  padding: 12px;
+  background: rgba(200,50,50,0.1);
+  border: 1px solid rgba(200,50,50,0.3);
+  border-radius: 10px;
+}
+.delete-confirm-area.visible { display: block; }
+.delete-confirm-text {
+  font-family: var(--font-head);
+  font-size: 0.8rem;
+  color: #e06060;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.delete-confirm-btns { display: flex; gap: 8px; }
+.btn-confirm-delete {
+  flex: 1; padding: 8px;
+  border-radius: 8px; border: none;
+  background: #c0392b; color: #fff;
+  font-family: var(--font-head); font-size: 0.78rem; font-weight: 700;
+  cursor: pointer; transition: var(--transition);
+}
+.btn-confirm-delete:hover { background: #e74c3c; }
+.btn-cancel-delete {
+  flex: 1; padding: 8px;
+  border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface3); color: var(--text-muted);
+  font-family: var(--font-head); font-size: 0.78rem; font-weight: 700;
+  cursor: pointer; transition: var(--transition);
+}
+.btn-cancel-delete:hover { color: var(--text); }
+
+/* ── CONFETTI ── */
+.confetti-particle {
+  position: fixed;
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 9999;
+  animation: confettiFall 1.2s ease-out forwards;
+}
+@keyframes confettiFall {
+  0%   { transform: translate(0,0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(0.4); opacity: 0; }
+}
+
+/* ── STAGGER ANIMATION ── */
+.game-card:nth-child(1)  { animation-delay: 0.02s; }
+.game-card:nth-child(2)  { animation-delay: 0.04s; }
+.game-card:nth-child(3)  { animation-delay: 0.06s; }
+.game-card:nth-child(4)  { animation-delay: 0.08s; }
+.game-card:nth-child(5)  { animation-delay: 0.10s; }
+.game-card:nth-child(6)  { animation-delay: 0.12s; }
+.game-card:nth-child(7)  { animation-delay: 0.14s; }
+.game-card:nth-child(8)  { animation-delay: 0.16s; }
+.game-card:nth-child(n+9){ animation-delay: 0.18s; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 480px) {
+  header { padding: 16px 14px 12px; }
+  main   { padding: 0 10px 100px; }
+  #games-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .detail-title { font-size: 1.2rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-top">
+    <div class="header-icon">🎮</div>
+    <div class="header-titles">
+      <h1>GAME VAULT</h1>
+      <p>Abdullah Al Mamun's Collection</p>
+    </div>
+  </div>
+  <div class="stat-pills">
+    <div class="stat-pill playing">🕹️ <span id="count-playing">0</span> Playing</div>
+    <div class="stat-pill completed">✅ <span id="count-completed">0</span> Completed</div>
+    <div class="stat-pill backlog">📦 <span id="count-backlog">0</span> Backlog</div>
+    <div class="stat-pill wishlist">🛒 <span id="count-wishlist">0</span> Wishlist</div>
+  </div>
+</header>
+
+<main>
+  <!-- RECENTLY ACTIVE SHELF -->
+  <div id="shelf-section" style="display:none">
+    <div class="shelf-title">⚡ Recently Active</div>
+    <div class="shelf-scroll" id="shelf-scroll"></div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="tabs-row" id="tabs-row">
+      <button class="tab-btn active all" data-tab="all">All</button>
+      <button class="tab-btn playing" data-tab="playing">🕹️ Playing</button>
+      <button class="tab-btn completed" data-tab="completed">✅ Completed</button>
+      <button class="tab-btn backlog" data-tab="backlog">📦 Backlog</button>
+      <button class="tab-btn wishlist" data-tab="wishlist">🛒 Wishlist</button>
+    </div>
+    <div class="filter-row">
+      <button class="platform-chip" data-platform="PS5">PS5</button>
+      <button class="platform-chip" data-platform="PS4">PS4</button>
+      <div class="filter-spacer"></div>
+      <select class="sort-select" id="sort-select">
+        <option value="az">A → Z</option>
+        <option value="recent">Recently Added</option>
+        <option value="rating">By Rating</option>
+      </select>
+      <button class="view-toggle" id="view-toggle">⊞ Grid</button>
+    </div>
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search by title or platform…"/>
+    </div>
+  </div>
+
+  <!-- BUDGET BAR -->
+  <div id="budget-bar">
+    <div class="budget-item">
+      <span class="budget-label">💰 Estimated Cost</span>
+      <span class="budget-value" id="budget-total">—</span>
+    </div>
+    <div class="budget-item">
+      <span class="budget-label">⏱ Est. Hours</span>
+      <span class="budget-value" id="budget-hours">—</span>
+    </div>
+  </div>
+
+  <!-- GAME GRID -->
+  <div class="content-area">
+    <div id="games-grid"></div>
+  </div>
+</main>
+
+<!-- FAB -->
+<button id="fab" title="Add Game">＋</button>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="add-modal-overlay">
+  <div id="add-modal-inner" onclick="event.stopPropagation()">
+    <div class="modal-drag-bar"></div>
+    <div class="modal-title">➕ Add to Vault</div>
+
+    <div class="form-group">
+      <label class="form-label">Game Title</label>
+      <input class="form-input" id="add-title" type="text" placeholder="Enter game name…"/>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Platform</label>
+      <div class="toggle-group" id="add-platform-group">
+        <button class="toggle-btn ps5 active" data-val="PS5">PS5</button>
+        <button class="toggle-btn ps4" data-val="PS4">PS4</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Status</label>
+      <div class="toggle-group" id="add-status-group">
+        <button class="toggle-btn playing active" data-val="playing">🕹️ Playing</button>
+        <button class="toggle-btn completed" data-val="completed">✅ Completed</button>
+        <button class="toggle-btn backlog" data-val="backlog">📦 Backlog</button>
+        <button class="toggle-btn wishlist" data-val="wishlist">🛒 Wishlist</button>
+      </div>
+    </div>
+
+    <div class="form-group" id="add-star-group" style="display:none">
+      <label class="form-label">Priority</label>
+      <button class="star-toggle-btn" id="add-star-btn">⭐ Mark as Priority</button>
+    </div>
+
+    <div class="form-group" id="add-rating-group" style="display:none">
+      <label class="form-label">Rating</label>
+      <div class="stars-input" id="add-stars">
+        <span class="star-icon" data-val="1">☆</span>
+        <span class="star-icon" data-val="2">☆</span>
+        <span class="star-icon" data-val="3">☆</span>
+        <span class="star-icon" data-val="4">☆</span>
+        <span class="star-icon" data-val="5">☆</span>
+      </div>
+    </div>
+
+    <div class="form-group" id="add-hours-group" style="display:none">
+      <label class="form-label">Est. Hours to Complete</label>
+      <input class="form-input" id="add-hours" type="number" min="0" placeholder="Optional…"/>
+    </div>
+
+    <div class="form-group" id="add-price-group" style="display:none">
+      <label class="form-label">Approx. Price ($)</label>
+      <input class="form-input" id="add-price" type="number" min="0" step="0.01" placeholder="Optional…"/>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" id="add-notes-label">Notes</label>
+      <textarea class="form-input" id="add-notes" rows="3" placeholder="Notes…" style="resize:vertical"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Cover Photo</label>
+      <div class="cover-dropzone" id="add-dropzone">
+        📸 Tap to upload cover image
+        <input type="file" id="add-cover-file" accept="image/*" onclick="event.stopPropagation()"/>
+      </div>
+      <div class="cover-preview-wrap" id="add-cover-preview"></div>
+    </div>
+
+    <button class="btn-primary" id="add-submit-btn">🎮 ADD TO VAULT</button>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detail-overlay">
+  <div id="detail-modal-inner" onclick="event.stopPropagation()">
+    <div class="detail-image-area" id="detail-image-area">
+      <div class="detail-placeholder" id="detail-placeholder">🎮</div>
+      <img class="detail-cover" id="detail-cover-img" style="display:none"/>
+      <button class="detail-star-btn" id="detail-star-btn" style="display:none" title="Toggle priority">
+        <svg id="detail-star-svg" viewBox="0 0 24 24" fill="none" stroke="#f0c040" stroke-width="2">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+        </svg>
+      </button>
+      <button class="detail-close-btn" id="detail-close-btn">✕</button>
+      <div class="img-action-btns" id="img-action-btns">
+        <button class="img-btn remove" id="detail-remove-photo-btn" style="display:none">✕ Remove</button>
+        <button class="img-btn add" id="detail-add-photo-btn">
+          📷 Add Cover
+          <input type="file" id="detail-photo-input" accept="image/*" onclick="event.stopPropagation()"/>
+        </button>
+        <button class="img-btn save-cover" id="detail-save-cover-btn">✓ Save &amp; Close</button>
+      </div>
+    </div>
+
+    <div class="detail-body">
+      <div class="detail-platform" id="detail-platform"></div>
+      <div class="detail-title" id="detail-title"></div>
+
+      <div class="detail-section-label">Status</div>
+      <div class="status-btns" id="detail-status-btns">
+        <button class="status-change-btn" data-status="playing">🕹️ Playing</button>
+        <button class="status-change-btn" data-status="completed">✅ Completed</button>
+        <button class="status-change-btn" data-status="backlog">📦 Backlog</button>
+        <button class="status-change-btn" data-status="wishlist">🛒 Wishlist</button>
+      </div>
+
+      <div id="detail-rating-section" style="display:none">
+        <div class="detail-section-label">Rating</div>
+        <div class="rating-row" id="detail-stars">
+          <span class="detail-star" data-val="1">☆</span>
+          <span class="detail-star" data-val="2">☆</span>
+          <span class="detail-star" data-val="3">☆</span>
+          <span class="detail-star" data-val="4">☆</span>
+          <span class="detail-star" data-val="5">☆</span>
+        </div>
+      </div>
+
+      <div id="detail-wishlist-fields" style="display:none">
+        <div class="detail-section-label">Price &amp; Time</div>
+        <div class="detail-field-row">
+          <span style="font-size:0.75rem;color:var(--text-muted);font-family:var(--font-head);font-weight:600;">$</span>
+          <input class="detail-field-input" id="detail-price-input" type="number" placeholder="Price…" min="0" step="0.01"/>
+          <span style="font-size:0.75rem;color:var(--text-muted);font-family:var(--font-head);font-weight:600;">⏱</span>
+          <input class="detail-field-input" id="detail-hours-input" type="number" placeholder="Hours…" min="0"/>
+          <button class="save-notes-btn" id="detail-save-wl-btn">Save</button>
+        </div>
+      </div>
+
+      <div class="detail-section-label">Notes</div>
+      <div class="notes-wrap">
+        <textarea class="detail-notes" id="detail-notes-input" rows="3" placeholder="Add notes…"></textarea>
+        <button class="save-notes-btn" id="detail-save-notes-btn">Save Note</button>
+      </div>
+
+      <div class="delete-confirm-area" id="delete-confirm-area">
+        <div class="delete-confirm-text">⚠️ Are you sure? This can't be undone.</div>
+        <div class="delete-confirm-btns">
+          <button class="btn-confirm-delete" id="btn-confirm-delete">Yes, Delete</button>
+          <button class="btn-cancel-delete" id="btn-cancel-delete">Cancel</button>
+        </div>
+      </div>
+
+      <div class="detail-actions" id="detail-actions">
+        <button class="btn-delete" id="btn-delete">🗑 Delete</button>
+        <button class="btn-close-detail" id="btn-close-detail">✕ Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════════════ */
+let nextId = 1;
+function mkGame(title, platform, status, star=false) {
+  return { id: nextId++, title, platform, status, star, rating: null, img: null, price: null, hoursEst: null, notes: '', lastTouched: null };
+}
+
+let games = [
+  // Backlog
+  mkGame("Assassin's Creed: Shadows","PS5","backlog"),
+  mkGame("Black Myth: Wukong","PS5","backlog"),
+  mkGame("FIFA 24","PS5","backlog"),
+  mkGame("Ghost of Tsushima","PS5","backlog"),
+  mkGame("Gran Turismo 7","PS5","backlog"),
+  mkGame("Horizon: Forbidden West","PS5","backlog"),
+  mkGame("Ratchet & Clank","PS5","backlog"),
+  mkGame("Red Dead Redemption II","PS4","backlog"),
+  mkGame("Spider-Man: Miles Morales","PS5","backlog"),
+  // Wishlist
+  mkGame("Assassin's Creed: Mirage","PS5","wishlist"),
+  mkGame("Astro Bot","PS5","wishlist"),
+  mkGame("Crimson Desert","PS5","wishlist"),
+  mkGame("Elden Ring","PS5","wishlist"),
+  mkGame("Ghost of Yōtei","PS5","wishlist",true),
+  mkGame("God of War: Ragnarök","PS5","wishlist",true),
+  mkGame("Horizon: Zero Dawn","PS5","wishlist"),
+  mkGame("It Takes Two","PS4","wishlist"),
+  mkGame("Pragmata","PS5","wishlist"),
+  mkGame("Resident Evil 4","PS5","wishlist"),
+  mkGame("Spider-Man II","PS5","wishlist"),
+  mkGame("Stray","PS4","wishlist"),
+  mkGame("The Last of Us I","PS5","wishlist"),
+  mkGame("The Last of Us II","PS5","wishlist"),
+  mkGame("The Witcher","PS5","wishlist"),
+];
+
+/* ═══════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════ */
+let currentTab = 'all';
+let activePlatforms = [];
+let sortMode = 'az';
+let viewMode = 'grid';
+let searchQuery = '';
+let detailGameId = null;
+let addStarActive = false;
+let addRating = 0;
+let addCoverDataUrl = null;
+let detailPendingPhoto = null;
+
+/* ═══════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════ */
+function starsStr(r, total=5) {
+  if (!r) return '';
+  return '★'.repeat(r) + '☆'.repeat(total-r);
+}
+
+function touch(id) {
+  const g = games.find(x=>x.id===id);
+  if (g) g.lastTouched = Date.now();
+}
+
+function statusLabel(s) {
+  return {playing:'🕹️ Playing',completed:'✅ Completed',backlog:'📦 Backlog',wishlist:'🛒 Wishlist'}[s]||s;
+}
+
+function notesPlaceholder(s) {
+  return {wishlist:'Why do I want this?',playing:'Where I left off',completed:'My thoughts',backlog:'Notes'}[s]||'Notes…';
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════════════════ */
+function renderAll() {
+  renderCounts();
+  renderShelf();
+  renderBudgetBar();
+  renderGames();
+}
+
+function renderCounts() {
+  ['playing','completed','backlog','wishlist'].forEach(s => {
+    document.getElementById('count-'+s).textContent = games.filter(g=>g.status===s).length;
+  });
+}
+
+function renderShelf() {
+  const touched = games.filter(g=>g.lastTouched).sort((a,b)=>b.lastTouched-a.lastTouched).slice(0,5);
+  const sec = document.getElementById('shelf-section');
+  const scroll = document.getElementById('shelf-scroll');
+  if (!touched.length) { sec.style.display='none'; return; }
+  sec.style.display='block';
+  scroll.innerHTML = touched.map(g=>`
+    <div class="shelf-card" onclick="openDetail(${g.id})">
+      ${g.img
+        ? `<img class="shelf-thumb" src="${g.img}" alt="${g.title}"/>`
+        : `<div class="shelf-thumb-placeholder">🎮</div>`}
+      <div class="shelf-info">
+        <div class="shelf-dot ${g.status}"></div>
+        <div class="shelf-name">${g.title}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderBudgetBar() {
+  const bar = document.getElementById('budget-bar');
+  if (currentTab !== 'wishlist') { bar.classList.remove('visible'); return; }
+  bar.classList.add('visible');
+
+  const wl = games.filter(g=>g.status==='wishlist');
+  const prices = wl.filter(g=>g.price!=null);
+  const hours  = wl.filter(g=>g.hoursEst!=null);
+
+  document.getElementById('budget-total').textContent =
+    prices.length ? '$' + prices.reduce((a,g)=>a+g.price,0).toFixed(2) : '—';
+  document.getElementById('budget-hours').textContent =
+    hours.length ? '~' + hours.reduce((a,g)=>a+g.hoursEst,0) + ' hrs' : '—';
+}
+
+function renderGames() {
+  let list = [...games];
+
+  // Tab filter
+  if (currentTab !== 'all') list = list.filter(g=>g.status===currentTab);
+
+  // Platform filter
+  if (activePlatforms.length) list = list.filter(g=>activePlatforms.includes(g.platform));
+
+  // Search
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    list = list.filter(g=>g.title.toLowerCase().includes(q)||g.platform.toLowerCase().includes(q));
+  }
+
+  // Sort
+  if (sortMode==='az')     list.sort((a,b)=>a.title.localeCompare(b.title));
+  if (sortMode==='recent') list.sort((a,b)=>(b.lastTouched||0)-(a.lastTouched||0));
+  if (sortMode==='rating') {
+    list.sort((a,b)=>{
+      if (a.status==='completed' && b.status==='completed') {
+        if (b.rating && !a.rating) return 1;
+        if (a.rating && !b.rating) return -1;
+        return (b.rating||0)-(a.rating||0);
+      }
+      return a.title.localeCompare(b.title);
+    });
+  }
+
+  const grid = document.getElementById('games-grid');
+
+  // Empty state
+  if (!list.length) {
+    const emptyMap = {
+      playing:  ['🕹️','Nothing playing right now — pick something!'],
+      completed:['✅','No completed games yet — get playing!'],
+      backlog:  ['📦','Your backlog is clear — nice work!'],
+      wishlist: ['🛒','Your wishlist is empty — time to browse!'],
+      all:      ['🔍','No games match your search'],
+    };
+    const [icon,msg] = searchQuery ? emptyMap.all : (emptyMap[currentTab]||emptyMap.all);
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">${icon}</div><p>${msg}</p></div>`;
+    grid.className = '';
+    return;
+  }
+
+  if (viewMode==='grid') {
+    grid.className = '';
+    grid.innerHTML = list.map((g,i)=>`
+      <div class="game-card ${g.status}" onclick="openDetail(${g.id})" style="animation-delay:${Math.min(i*0.025,0.3)}s">
+        <div class="cover-wrap">
+          ${g.img
+            ? `<img class="cover-img" src="${g.img}" alt="${g.title}"/>`
+            : `<div class="cover-placeholder">🎮<span>${g.platform}</span></div>`}
+          <div class="status-badge ${g.status}">${statusLabel(g.status)}</div>
+          ${g.status==='wishlist'&&g.star ? `<div class="star-badge">⭐</div>` : ''}
+          ${g.status==='completed'&&g.rating ? `<div class="completed-badge">${starsStr(g.rating)}</div>` : ''}
+        </div>
+        <div class="card-info">
+          <div class="card-platform">${g.platform}</div>
+          <div class="card-title">${g.title}</div>
+          ${g.status==='completed'&&g.rating ? `<div class="card-rating">${starsStr(g.rating)}</div>` : ''}
+          ${g.status==='wishlist'&&g.price!=null ? `<div class="card-price">$${g.price.toFixed(2)}</div>` : ''}
+        </div>
+      </div>
+    `).join('');
+  } else {
+    grid.className = 'list-view';
+    grid.innerHTML = list.map(g=>`
+      <div class="list-card ${g.status}" onclick="openDetail(${g.id})">
+        ${g.img
+          ? `<img class="list-thumb" src="${g.img}" alt="${g.title}"/>`
+          : `<div class="list-thumb-placeholder">🎮</div>`}
+        <div class="list-info">
+          <div class="list-title">${g.title}${g.status==='wishlist'&&g.star?' ⭐':''}</div>
+          <div class="list-meta">
+            <span class="list-platform">${g.platform}</span>
+            <span class="list-status ${g.status}">${statusLabel(g.status)}</span>
+            ${g.status==='completed'&&g.rating?`<span class="list-rating">${starsStr(g.rating)}</span>`:''}
+          </div>
+          ${g.notes?`<div class="list-notes">${g.notes}</div>`:''}
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   TABS + FILTERS
+═══════════════════════════════════════════════════════ */
+document.getElementById('tabs-row').addEventListener('click', e=>{
+  const btn = e.target.closest('[data-tab]');
+  if (!btn) return;
+  currentTab = btn.dataset.tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    b.classList.remove('active');
+    ['all','playing','completed','backlog','wishlist'].forEach(c=>b.classList.remove(c));
+  });
+  btn.classList.add('active', currentTab);
+  renderAll();
+});
+
+document.querySelectorAll('.platform-chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    const p = chip.dataset.platform;
+    if (activePlatforms.includes(p)) activePlatforms = activePlatforms.filter(x=>x!==p);
+    else activePlatforms.push(p);
+    chip.classList.toggle('active');
+    renderGames();
+  });
+});
+
+document.getElementById('sort-select').addEventListener('change', e=>{
+  sortMode = e.target.value;
+  renderGames();
+});
+
+document.getElementById('view-toggle').addEventListener('click', ()=>{
+  viewMode = viewMode==='grid' ? 'list' : 'grid';
+  document.getElementById('view-toggle').textContent = viewMode==='grid' ? '⊞ Grid' : '☰ List';
+  renderGames();
+});
+
+document.getElementById('search-input').addEventListener('input', e=>{
+  searchQuery = e.target.value.trim();
+  renderGames();
+});
+
+/* ═══════════════════════════════════════════════════════
+   ADD MODAL
+═══════════════════════════════════════════════════════ */
+function openAddModal() {
+  // reset
+  document.getElementById('add-title').value='';
+  setAddPlatform('PS5');
+  setAddStatus('playing');
+  addStarActive=false;
+  addRating=0;
+  addCoverDataUrl=null;
+  document.getElementById('add-notes').value='';
+  document.getElementById('add-hours').value='';
+  document.getElementById('add-price').value='';
+  document.getElementById('add-cover-preview').innerHTML='';
+  document.getElementById('add-cover-file').value='';
+  updateAddStarBtn();
+  updateAddStars();
+
+  document.getElementById('add-modal-overlay').classList.add('visible');
+}
+
+function closeAddModal() {
+  document.getElementById('add-modal-overlay').classList.remove('visible');
+}
+
+document.getElementById('fab').addEventListener('click', openAddModal);
+document.getElementById('add-modal-overlay').addEventListener('click', closeAddModal);
+
+// Platform
+document.getElementById('add-platform-group').addEventListener('click', e=>{
+  const btn = e.target.closest('[data-val]');
+  if (!btn) return;
+  setAddPlatform(btn.dataset.val);
+});
+
+function setAddPlatform(val) {
+  document.querySelectorAll('#add-platform-group [data-val]').forEach(b=>{
+    b.classList.toggle('active', b.dataset.val===val);
+    b.classList.remove('ps5','ps4');
+    if (b.classList.contains('active')) b.classList.add(b.dataset.val.toLowerCase());
+  });
+}
+
+function getAddPlatform() {
+  const active = document.querySelector('#add-platform-group .active');
+  return active ? active.dataset.val : 'PS5';
+}
+
+// Status
+document.getElementById('add-status-group').addEventListener('click', e=>{
+  const btn = e.target.closest('[data-val]');
+  if (!btn) return;
+  setAddStatus(btn.dataset.val);
+});
+
+function setAddStatus(val) {
+  document.querySelectorAll('#add-status-group [data-val]').forEach(b=>{
+    b.classList.toggle('active', b.dataset.val===val);
+    ['playing','completed','backlog','wishlist'].forEach(c=>b.classList.remove(c));
+    if (b.classList.contains('active')) b.classList.add(b.dataset.val);
+  });
+  // Show/hide conditional fields
+  const isWishlist  = val==='wishlist';
+  const isCompleted = val==='completed';
+  document.getElementById('add-star-group').style.display   = isWishlist  ? 'block' : 'none';
+  document.getElementById('add-rating-group').style.display = isCompleted ? 'block' : 'none';
+  document.getElementById('add-hours-group').style.display  = isWishlist  ? 'block' : 'none';
+  document.getElementById('add-price-group').style.display  = isWishlist  ? 'block' : 'none';
+  if (!isWishlist) { addStarActive=false; updateAddStarBtn(); }
+  if (!isCompleted){ addRating=0; updateAddStars(); }
+  document.getElementById('add-notes-label').textContent = {
+    wishlist:'Why do I want this?', playing:'Where I left off', completed:'My thoughts', backlog:'Notes'
+  }[val]||'Notes';
+  document.getElementById('add-notes').placeholder = notesPlaceholder(val);
+}
+
+function getAddStatus() {
+  const active = document.querySelector('#add-status-group .active');
+  return active ? active.dataset.val : 'playing';
+}
+
+// Star toggle
+document.getElementById('add-star-btn').addEventListener('click', ()=>{
+  addStarActive=!addStarActive;
+  updateAddStarBtn();
+});
+function updateAddStarBtn() {
+  const btn = document.getElementById('add-star-btn');
+  btn.classList.toggle('active', addStarActive);
+  btn.textContent = addStarActive ? '⭐ Priority Set!' : '⭐ Mark as Priority';
+}
+
+// Rating stars in add modal
+document.getElementById('add-stars').addEventListener('click', e=>{
+  const s = e.target.closest('[data-val]');
+  if (!s) return;
+  const v = parseInt(s.dataset.val);
+  addRating = addRating===v ? 0 : v;
+  updateAddStars();
+});
+function updateAddStars() {
+  document.querySelectorAll('#add-stars .star-icon').forEach(s=>{
+    s.classList.toggle('filled', parseInt(s.dataset.val)<=addRating);
+    s.textContent = parseInt(s.dataset.val)<=addRating ? '★' : '☆';
+  });
+}
+
+// Cover file
+document.getElementById('add-cover-file').addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    addCoverDataUrl = ev.target.result;
+    document.getElementById('add-cover-preview').innerHTML = `<img src="${addCoverDataUrl}" alt="preview"/>`;
+  };
+  reader.readAsDataURL(file);
+  e.stopPropagation();
+});
+
+// Submit
+document.getElementById('add-submit-btn').addEventListener('click', ()=>{
+  const title = document.getElementById('add-title').value.trim();
+  if (!title) { document.getElementById('add-title').focus(); return; }
+  const status = getAddStatus();
+  const g = {
+    id: nextId++,
+    title,
+    platform: getAddPlatform(),
+    status,
+    star: status==='wishlist' ? addStarActive : false,
+    rating: status==='completed' && addRating ? addRating : null,
+    img: addCoverDataUrl,
+    price: status==='wishlist' && document.getElementById('add-price').value ? parseFloat(document.getElementById('add-price').value) : null,
+    hoursEst: status==='wishlist' && document.getElementById('add-hours').value ? parseFloat(document.getElementById('add-hours').value) : null,
+    notes: document.getElementById('add-notes').value.trim(),
+    lastTouched: Date.now(),
+  };
+  games.push(g);
+  closeAddModal();
+  renderAll();
+});
+
+/* ═══════════════════════════════════════════════════════
+   DETAIL MODAL
+═══════════════════════════════════════════════════════ */
+function openDetail(id) {
+  detailGameId = id;
+  detailPendingPhoto = null;
+  refreshDetailModal();
+  document.getElementById('detail-overlay').classList.add('visible');
+}
+
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('visible');
+  detailGameId = null;
+  // hide delete confirm
+  document.getElementById('delete-confirm-area').classList.remove('visible');
+  document.getElementById('detail-actions').style.display = 'flex';
+  document.getElementById('detail-save-cover-btn').classList.remove('visible');
+  detailPendingPhoto = null;
+}
+
+function refreshDetailModal() {
+  const g = games.find(x=>x.id===detailGameId);
+  if (!g) return;
+
+  // Image area
+  if (g.img) {
+    document.getElementById('detail-cover-img').src = g.img;
+    document.getElementById('detail-cover-img').style.display='block';
+    document.getElementById('detail-placeholder').style.display='none';
+    document.getElementById('detail-remove-photo-btn').style.display='';
+    document.getElementById('detail-add-photo-btn').textContent = '📷 Change Cover';
+    // Re-attach input
+    let inp = document.getElementById('detail-add-photo-btn').querySelector('input');
+    if (!inp) {
+      inp = document.createElement('input');
+      inp.type='file'; inp.id='detail-photo-input'; inp.accept='image/*';
+      inp.onclick = e=>e.stopPropagation();
+      inp.addEventListener('change', handleDetailPhotoChange);
+      document.getElementById('detail-add-photo-btn').appendChild(inp);
+    }
+  } else {
+    document.getElementById('detail-cover-img').style.display='none';
+    document.getElementById('detail-placeholder').style.display='flex';
+    document.getElementById('detail-remove-photo-btn').style.display='none';
+    document.getElementById('detail-add-photo-btn').textContent = '📷 Add Cover';
+    let inp = document.getElementById('detail-add-photo-btn').querySelector('input');
+    if (!inp) {
+      inp = document.createElement('input');
+      inp.type='file'; inp.id='detail-photo-input'; inp.accept='image/*';
+      inp.onclick = e=>e.stopPropagation();
+      inp.addEventListener('change', handleDetailPhotoChange);
+      document.getElementById('detail-add-photo-btn').appendChild(inp);
+    }
+  }
+
+  // Star btn (wishlist only)
+  const starBtn = document.getElementById('detail-star-btn');
+  if (g.status==='wishlist') {
+    starBtn.style.display='flex';
+    updateDetailStarSvg(g.star);
+  } else {
+    starBtn.style.display='none';
+  }
+
+  // Platform / title
+  document.getElementById('detail-platform').textContent = g.platform;
+  document.getElementById('detail-platform').className = 'detail-platform '+g.status;
+  document.getElementById('detail-title').textContent = g.title;
+
+  // Status buttons
+  document.querySelectorAll('.status-change-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.status===g.status);
+    ['playing','completed','backlog','wishlist'].forEach(c=>b.classList.remove(c));
+    if (b.classList.contains('active')) b.classList.add(g.status);
+  });
+
+  // Rating section
+  const ratingSec = document.getElementById('detail-rating-section');
+  if (g.status==='completed') {
+    ratingSec.style.display='block';
+    renderDetailStars(g.rating);
+  } else {
+    ratingSec.style.display='none';
+  }
+
+  // Wishlist fields
+  const wlFields = document.getElementById('detail-wishlist-fields');
+  if (g.status==='wishlist') {
+    wlFields.style.display='block';
+    document.getElementById('detail-price-input').value = g.price!=null ? g.price : '';
+    document.getElementById('detail-hours-input').value = g.hoursEst!=null ? g.hoursEst : '';
+  } else {
+    wlFields.style.display='none';
+  }
+
+  // Notes
+  document.getElementById('detail-notes-input').value = g.notes||'';
+  document.getElementById('detail-notes-input').placeholder = notesPlaceholder(g.status);
+
+  // Reset delete confirm
+  document.getElementById('delete-confirm-area').classList.remove('visible');
+  document.getElementById('detail-actions').style.display='flex';
+}
+
+function updateDetailStarSvg(starred) {
+  const svg = document.getElementById('detail-star-svg');
+  if (starred) {
+    svg.setAttribute('fill','#f0c040');
+    svg.setAttribute('stroke','#f0c040');
+  } else {
+    svg.setAttribute('fill','none');
+    svg.setAttribute('stroke','#f0c040');
+  }
+}
+
+function renderDetailStars(rating) {
+  document.querySelectorAll('.detail-star').forEach(s=>{
+    const v = parseInt(s.dataset.val);
+    s.classList.toggle('filled', v<=(rating||0));
+    s.textContent = v<=(rating||0) ? '★' : '☆';
+  });
+}
+
+// Close buttons
+document.getElementById('detail-close-btn').addEventListener('click', closeDetail);
+document.getElementById('btn-close-detail').addEventListener('click', closeDetail);
+document.getElementById('detail-overlay').addEventListener('click', e=>{
+  if (e.target === document.getElementById('detail-overlay')) closeDetail();
+});
+
+// Star toggle in detail
+document.getElementById('detail-star-btn').addEventListener('click', ()=>{
+  const g = games.find(x=>x.id===detailGameId);
+  if (!g || g.status!=='wishlist') return;
+  g.star = !g.star;
+  touch(g.id);
+  updateDetailStarSvg(g.star);
+  renderAll();
+});
+
+// Status change
+document.getElementById('detail-status-btns').addEventListener('click', e=>{
+  const btn = e.target.closest('[data-status]');
+  if (!btn) return;
+  const g = games.find(x=>x.id===detailGameId);
+  if (!g) return;
+  const newStatus = btn.dataset.status;
+  const oldStatus = g.status;
+  if (newStatus===oldStatus) return;
+
+  if (newStatus!=='wishlist') g.star = false;
+  if (newStatus!=='completed') g.rating = null;
+  g.status = newStatus;
+  touch(g.id);
+
+  if (newStatus==='completed') launchConfetti();
+
+  refreshDetailModal();
+  renderAll();
+});
+
+// Rating in detail
+document.getElementById('detail-stars').addEventListener('click', e=>{
+  const s = e.target.closest('[data-val]');
+  if (!s) return;
+  const g = games.find(x=>x.id===detailGameId);
+  if (!g) return;
+  const v = parseInt(s.dataset.val);
+  g.rating = g.rating===v ? null : v;
+  touch(g.id);
+  renderDetailStars(g.rating);
+  renderAll();
+});
+
+// Save notes
+document.getElementById('detail-save-notes-btn').addEventListener('click', ()=>{
+  const g = games.find(x=>x.id===detailGameId);
+  if (!g) return;
+  g.notes = document.getElementById('detail-notes-input').value.trim();
+  touch(g.id);
+  renderAll();
+  const btn = document.getElementById('detail-save-notes-btn');
+  btn.textContent='✓ Saved!';
+  setTimeout(()=>btn.textContent='Save Note',1500);
+});
+
+// Save wishlist fields
+document.getElementById('detail-save-wl-btn').addEventListener('click', ()=>{
+  const g = games.find(x=>x.id===detailGameId);
+  if (!g) return;
+  const pv = document.getElementById('detail-price-input').value;
+  const hv = document.getElementById('detail-hours-input').value;
+  g.price    = pv ? parseFloat(pv) : null;
+  g.hoursEst = hv ? parseFloat(hv) : null;
+  touch(g.id);
+  renderAll();
+  const btn = document.getElementById('detail-save-wl-btn');
+  btn.textContent='✓'; setTimeout(()=>btn.textContent='Save',1500);
+});
+
+// Remove photo
+document.getElementById('detail-remove-photo-btn').addEventListener('click', ()=>{
+  const g = games.find(x=>x.id===detailGameId);
+  if (!g) return;
+  g.img = null;
+  detailPendingPhoto = null;
+  touch(g.id);
+  document.getElementById('detail-save-cover-btn').classList.remove('visible');
+  refreshDetailModal();
+  renderAll();
+});
+
+// Add photo
+function handleDetailPhotoChange(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    detailPendingPhoto = ev.target.result;
+    document.getElementById('detail-cover-img').src = detailPendingPhoto;
+    document.getElementById('detail-cover-img').style.display='block';
+    document.getElementById('detail-placeholder').style.display='none';
+    document.getElementById('detail-save-cover-btn').classList.add('visible');
+  };
+  reader.readAsDataURL(file);
+  e.stopPropagation();
+}
+
+// Ensure photo input listener is attached once
+(function() {
+  const addBtn = document.getElementById('detail-add-photo-btn');
+  const inp = document.createElement('input');
+  inp.type='file'; inp.id='detail-photo-input'; inp.accept='image/*';
+  inp.onclick = e=>e.stopPropagation();
+  inp.addEventListener('change', handleDetailPhotoChange);
+  addBtn.appendChild(inp);
+})();
+
+// Save cover & close
+document.getElementById('detail-save-cover-btn').addEventListener('click', ()=>{
+  const g = games.find(x=>x.id===detailGameId);
+  if (!g || !detailPendingPhoto) return;
+  g.img = detailPendingPhoto;
+  touch(g.id);
+  detailPendingPhoto = null;
+  document.getElementById('detail-save-cover-btn').classList.remove('visible');
+  refreshDetailModal();
+  renderAll();
+  closeDetail();
+});
+
+// Delete
+document.getElementById('btn-delete').addEventListener('click', ()=>{
+  document.getElementById('delete-confirm-area').classList.add('visible');
+  document.getElementById('detail-actions').style.display='none';
+});
+document.getElementById('btn-cancel-delete').addEventListener('click', ()=>{
+  document.getElementById('delete-confirm-area').classList.remove('visible');
+  document.getElementById('detail-actions').style.display='flex';
+});
+document.getElementById('btn-confirm-delete').addEventListener('click', ()=>{
+  games = games.filter(g=>g.id!==detailGameId);
+  closeDetail();
+  renderAll();
+});
+
+/* ═══════════════════════════════════════════════════════
+   CONFETTI
+═══════════════════════════════════════════════════════ */
+function launchConfetti() {
+  const colors = ['#f0c040','#3498db','#9b59b6','#2ecc71','#e74c3c','#f39c12','#fff'];
+  const cx = window.innerWidth/2, cy = window.innerHeight/2;
+  for (let i=0;i<16;i++) {
+    const el = document.createElement('div');
+    el.className='confetti-particle';
+    const angle = (i/16)*360;
+    const dist  = 80+Math.random()*120;
+    const dx = Math.cos(angle*Math.PI/180)*dist;
+    const dy = Math.sin(angle*Math.PI/180)*dist - 60;
+    el.style.cssText = `
+      left:${cx}px; top:${cy}px;
+      background:${colors[i%colors.length]};
+      border-radius:${Math.random()>0.5?'50%':'2px'};
+      --dx:${dx}px; --dy:${dy}px;
+      --rot:${Math.random()*720-360}deg;
+      animation-duration:${0.9+Math.random()*0.5}s;
+    `;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 1600);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════ */
+renderAll();
+</script>
+</body>
+</html>
